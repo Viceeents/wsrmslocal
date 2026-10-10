@@ -3,6 +3,6 @@ export default function roleMiddleware(...roles) {
     roles.includes(req.user.role)
       ? next()
       : res.status(403).json({
-          message: "Administrator access is required.",
+          message: "Your role does not have permission to perform this action.",
         });
 }

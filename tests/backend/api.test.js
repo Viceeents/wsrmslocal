@@ -604,3 +604,39 @@ test("Cross-origin mutations and signed-out sessions are denied", async () => {
   await staff.post("/api/auth/logout").expect(200);
   await staff.get("/api/parcels").expect(401);
 });
+
+test("Managers can manage warehouse operations while account management stays restricted", async () => {
+  const account = {
+    name: "Warehouse Manager",
+    email: "manager@test.example",
+    password: "Manager@2026",
+    role: "manager",
+    active: 1,
+  };
+  const created = (await admin.post("/api/users").send(account).expect(201))
+    .body;
+  assert.equal(created.role, "manager");
+  const manager = request.agent(app);
+  await manager
+    .post("/api/auth/login")
+    .send({ email: account.email, password: account.password })
+    .expect(200);
+  await manager.get("/api/reports").expect(200);
+  await manager.get("/api/reports/export/parcels").expect(200);
+  await manager.get("/api/parcels").expect(200);
+  await manager.get("/api/transactions").expect(200);
+  await manager.get("/api/users").expect(403);
+  await manager.post("/api/users").send(account).expect(403);
+  await manager.put("/api/warehouse").send({}).expect(400);
+  await staff.put("/api/warehouse").send({}).expect(403);
+  await manager.get("/api/system-settings").expect(200);
+  await manager.put("/api/system-settings").send({}).expect(400);
+  await staff.get("/api/system-settings").expect(403);
+  await manager
+    .post("/api/categories")
+    .send({ name: "Manager category", color: "#123456" })
+    .expect(201);
+  await manager.patch("/api/parcels/1").send({}).expect(400);
+  await staff.patch("/api/parcels/1").send({}).expect(403);
+  await staff.get("/api/reports").expect(403);
+});

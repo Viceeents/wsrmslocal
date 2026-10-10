@@ -157,6 +157,13 @@ const collection = {
           color: "#688d77",
           active: 1,
         }),
+        make("Create manager account", "POST", "/users", {
+          name: "Warehouse Manager",
+          email: "manager@example.com",
+          password: "Manager@2026",
+          role: "manager",
+          active: 1,
+        }),
         make("Create staff account", "POST", "/users", {
           name: "New Staff",
           email: "newstaff@example.com",

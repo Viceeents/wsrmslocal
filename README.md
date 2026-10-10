@@ -1,18 +1,21 @@
 # Warehouse Storage Records Management System
 
-A working staff-first warehouse application built with **JavaScript, React, Node.js, Express, PostgreSQL, Tailwind CSS, Chart.js, and npm**. The interface is based on the supplied written requirements; the Figma Make link was inaccessible and has not been reproduced pixel-for-pixel.
+A working staff-first warehouse application built with **JavaScript, React, Node.js, Express, PostgreSQL, Tailwind CSS, Chart.js, and npm**. Supports parcel check-in, storage recommendations, warehouse routing, verified dispatch, and role-based warehouse management.
 
 ## Run locally
 
-Requirements: Node.js **24+**, npm, PostgreSQL **18** (the version tested; the schema uses standard PostgreSQL features). Open this `wsrms` folder in Visual Studio Code.
+Requirements: Node.js **24+**, npm, PostgreSQL **18** (the version tested; the schema uses standard PostgreSQL features). Open this `wsrms-local` folder in Visual Studio Code.
 
-Your local `.env` already points to **`wsrms_inventory_db`**. Database credentials are private and excluded from Git.
+Copy `.env.example` to `.env` and configure your PostgreSQL connection before starting. Database credentials are private and excluded from Git.
 
 For Neon on Vercel, `DATABASE_URL` may use the pooled (`-pooler`) endpoint. Normal public-schema requests omit the unsupported `search_path` startup option. Initialization and backups use `DATABASE_URL_UNPOOLED` when provided; otherwise the app derives the direct endpoint from a Neon pooled hostname. Custom schemas use a direct connection. Set connection variables for Vercel's Production environment, then redeploy. Keep local PostgreSQL configuration in `.env` separate from the cloud values in the parent `.env.local`.
 
 ```powershell
-cd C:\warehousemanagement\wsrms
+git clone https://github.com/Viceeents/wsrmslocal.git
+cd wsrmslocal
 npm.cmd install
+Copy-Item .env.example .env
+# Set DATABASE_URL in .env before running database setup.
 npm.cmd run db:setup
 npm.cmd run dev
 ```
@@ -46,20 +49,20 @@ The passwords can be overridden by `ADMIN_PASSWORD` and `STAFF_PASSWORD` **befor
 
 ## What works
 
-- Staff/admin authentication with hashed passwords, eight-hour HttpOnly sessions, login rate limiting, active-account checks, and server-enforced roles.
+- Staff/manager/admin authentication with hashed passwords, eight-hour HttpOnly sessions, login rate limiting, active-account checks, and server-enforced roles.
 - Parcel check-in, unique internal/user/transaction codes, optional unique external tracking numbers, filtering, details, and inventory monitoring for racks and floor storage.
 - Each cell carries layout, storage, and movement information. Occupancy, parcel counts, and stored IDs come from inventory records. Empty, occupied, full, and unavailable locations have distinct indicators.
 - Storage recommendations enforce **category, size, parcel capacity, size-unit capacity, total weight, availability, and retrieval/return access**. Racks and floor locations use the same scoring rules.
-- The default **Warehouse Access Point** is one door with **Receiving + Dispatch** usage. Administrators can configure receiving, dispatch, or both on each access point.
+- The default **Warehouse Access Point** is one door with **Receiving + Dispatch** usage. Administrators and managers can configure receiving, dispatch, or both on each access point.
 - Dijkstra independently calculates the route to the parcel and the return to an access point. The dispatch view displays both step counts, their total, and selectable route overlays. Routes use current active/walkable flags, movement costs, and allowed directions. Racks, walls, and blocked cells cannot be crossed; floor storage may be walkable or served from an adjacent aisle. Steps are grid movements, not meters.
 - Storage transfers between compatible reachable locations, with changes recorded in transaction history.
-- Administrator parcel corrections require a reason, retain original/new values in the audit log, and revalidate storage limits.
+- Administrator and manager parcel corrections require a reason, retain original/new values in the audit log, and revalidate storage limits.
 - Retrieval followed by **server-verified dispatch**. A wrong code or a parcel not marked Retrieved cannot be dispatched. Correct dispatch frees capacity, changes status, and records verification in a single database transaction.
 - QR codes and CODE128 barcodes encode the internal parcel code. Print preview supports multiple labels; browser print/PDF hides navigation.
 - Camera scanning via `html5-qrcode`, USB scanner keyboard input, and manual code entry. Camera requires **localhost or HTTPS** and browser permission; physical camera/scanner/thermal-printer compatibility needs testing on your hardware.
 - Editable 10 × 14 layout/inventory grid with rack and floor capacities, weight limits, category restrictions, active status, reservations, and blocked cells. Occupied locations must remain reachable in both directions. Relocate active parcels before disabling or blocking their cell. Unreachable empty locations produce warnings and are excluded from recommendations. Historical location configurations remain attached for traceability. Layout revision checks prevent overwriting someone else's edit.
-- Persistent in-app notifications for capacity, check-in, dispatch, failed verification, unavailable storage, blocked routes, and layout changes. Administrators choose enabled events and the near-full threshold. Read state is per account.
-- Account appearance settings persist Small/Medium/Large font size and one of five readable accent colors: Blue, Teal, Green, Purple, Orange. Administrators also control new floor-storage assignments.
+- Persistent in-app notifications for capacity, check-in, dispatch, failed verification, unavailable storage, blocked routes, and layout changes. Administrators and managers choose enabled events and the near-full threshold. Read state is per account.
+- Account appearance settings persist Small/Medium/Large font size and one of five readable accent colors: Blue, Teal, Green, Purple, Orange. Administrators and managers also control new floor-storage assignments.
 - Admin team management, category management, operational charts, CSV exports, and detailed audit records.
 - Responsive layout for desktop and mobile. Dashboard, inventory, warehouse map, parcels, transactions, and reports refresh every **30 seconds**; writes are immediately persisted. This uses polling, not WebSockets.
 
@@ -84,11 +87,11 @@ npm.cmd run db:backup # private PostgreSQL dump under .local/backups
 
 If Chromium is missing, run `npx.cmd playwright install chromium`. Tests create an isolated, randomly named `wsrms_test_*` schema in the configured database and drop only that schema afterwards. The database user needs `CREATE SCHEMA` permission. Tests do not change normal warehouse data. GitHub Actions runs the same checks against an isolated PostgreSQL service.
 
-Production `NODE_ENV=production` enables Secure session cookies, so serve through HTTPS and set `APP_ORIGIN` to the actual origin. Use a dedicated database account, managed environment secrets, and database backups for deployment. No external deployment or GitHub repository has been created.
+Production `NODE_ENV=production` enables Secure session cookies, so serve through HTTPS and set `APP_ORIGIN` to the actual origin. Use a dedicated database account, managed environment secrets, and database backups for deployment. Source code is hosted at [Viceeents/wsrmslocal](https://github.com/Viceeents/wsrmslocal).
 
 For the current local setup, open **http://127.0.0.1:3001** after building and starting. Another application may occupy port 5173; the Express-served build avoids that conflict.
 
-Initialization applies `database/migrations/002_inventory_cells.sql` once. The migration preserves existing parcel IDs, storage assignments, and audit history while extending legacy racks into storage locations. A private backup was taken before migrating the local database. Repeat initialization does not reset records or reapply the layout conversion. The API now uses `location_id`, `location_code`, and `locations` instead of the former rack-only names.
+Initialization applies `database/migrations/002_inventory_cells.sql` once. The migration preserves existing parcel IDs, storage assignments, and audit history while extending legacy racks into storage locations. Repeat initialization does not reset records or reapply the layout conversion. The API now uses `location_id`, `location_code`, and `locations` instead of the former rack-only names.
 
 ## Project structure
 
@@ -105,4 +108,13 @@ scripts/         Database setup and isolated test runner
 
 API documentation: [docs/api/README.md](docs/api/README.md). Import [docs/api/WSRMS.postman_collection.json](docs/api/WSRMS.postman_collection.json) into Postman; sign in first so the cookie jar authenticates later requests.
 
-Initialize a local Git repository with `git init`, then review `.gitignore` before committing. Add a GitHub remote and push when you are ready to publish your source.
+## Access roles
+
+| Capability | Staff | Manager | Administrator |
+| --- | --- | --- | --- |
+| Warehouse operations, inventory, and transactions | Yes | Yes | Yes |
+| Reports and CSV exports | No | Yes | Yes |
+| Categories, layout, system settings, and audited parcel corrections | No | Yes | Yes |
+| Account and role management | No | No | Yes |
+
+Administrators can create a Warehouse Manager or assign `manager` to an existing account in Team members. No manager account is seeded by default. The Postman collection includes an administrator-only request to create a manager account. Existing accounts keep their roles; migration 003 runs during database initialization. Backup/restore remain administrator maintenance scripts; this change does not introduce approval or scheduling workflows.

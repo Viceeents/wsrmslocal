@@ -104,7 +104,7 @@ export default function ParcelDetailsPage() {
         description={p.description}
       >
         <StatusBadge status={p.status} />
-        {user.role === "admin" && (
+        {["admin", "manager"].includes(user.role) && (
           <Button
             variant="secondary"
             onClick={() => {

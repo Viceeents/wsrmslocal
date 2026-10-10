@@ -454,6 +454,28 @@
           }
         },
         {
+          "name": "Create manager account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Warehouse Manager\",\n  \"email\": \"manager@example.com\",\n  \"password\": \"Manager@2026\",\n  \"role\": \"manager\",\n  \"active\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
           "name": "Create staff account",
           "request": {
             "method": "POST",

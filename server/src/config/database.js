@@ -95,6 +95,24 @@ export async function initializeDatabase() {
         );
       }
       await query(readFileSync(path.join(root, "database/schema.sql"), "utf8"));
+      if (
+        !(await get(
+          "SELECT version FROM schema_migrations WHERE version=?",
+          "003_manager_role",
+        ))
+      ) {
+        await query(
+          readFileSync(
+            path.join(root, "database/migrations/003_manager_role.sql"),
+            "utf8",
+          ),
+        );
+        await run(
+          "INSERT INTO schema_migrations(version,applied_at) VALUES(?,?)",
+          "003_manager_role",
+          new Date().toISOString(),
+        );
+      }
       const { seed } = await import("../../../database/seeds/demo.js");
       await seed();
     }, migrationPool);

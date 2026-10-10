@@ -5,5 +5,5 @@ import validate from "../middleware/validateRequest.js";
 import { layoutSchema } from "../utils/schemas.js";
 const r = Router();
 r.get("/", c.details);
-r.put("/", role("admin"), validate(layoutSchema), c.update);
+r.put("/", role("admin", "manager"), validate(layoutSchema), c.update);
 export default r;
