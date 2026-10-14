@@ -11,7 +11,9 @@ export default function GridCell({
     ? Math.max(
         (location.occupancy || 0) / location.capacity,
         (location.used_units || 0) / location.unit_capacity,
-        (location.used_weight || 0) / location.max_weight,
+        location.storage_type === "rack"
+          ? (location.used_weight || 0) / location.max_weight
+          : 0,
       )
     : 0;
   const state =

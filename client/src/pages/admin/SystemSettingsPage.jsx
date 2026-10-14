@@ -83,7 +83,7 @@ export default function SystemSettingsPage() {
                 </p>
                 <Field
                   label="Nearing capacity threshold (%)"
-                  hint="Alerts consider parcel capacity, size units, and weight limits."
+                  hint="Alerts consider parcel capacity, size units, and rack weight limits."
                 >
                   <input
                     type="number"

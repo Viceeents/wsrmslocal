@@ -149,7 +149,7 @@ export default function CheckInPage() {
                   parcel.
                 </p>
                 <ul>
-                  <li>Available capacity and weight limits</li>
+                  <li>Available capacity and rack weight limits</li>
                   <li>Compatible parcel size and category</li>
                   <li>Shortest walk from the Warehouse Access Point</li>
                 </ul>
